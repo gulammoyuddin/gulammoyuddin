@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
+import axios from 'axios'
 const Singleperson =({ name, number })=><p>{name} {number}</p>
 const Allperson =({ persons })=>{
   return(
@@ -60,6 +61,15 @@ const App = () => {
     setNewName('')
   }
   }
+  const hook= ()=>{
+    axios
+    .get('http://localhost:3001/persons')
+    .then(Response=>{
+      console.log('promise fullfilled')
+      setPersons(Response.data)
+    })
+  }
+  useEffect(hook,[])
   const handleChangeName=(event)=>{
    // console.log(event.target.value)
     setNewName(event.target.value)
