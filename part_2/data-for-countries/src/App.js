@@ -1,14 +1,16 @@
 import { useState,useEffect } from 'react'
 import axios from 'axios'
-const Showcond=({ a,getWeather })=>{
+const Showcond=({ a,w })=>{
   if(a.length>0){
-    return <div>{a.map(to=><Displayall a={to} key={to.name.official} />)}</div>
+    return <div>{a.map(to=><Displayall a={to} key={to.name.official} q={w}/>)}</div>
   }
 }
 const Displayall=({ a,q })=>{
-
-  const r='http://openweathermap.org/img/wn/'+q.weather[0].icon+'.png'
-  console.log(r)
+  console.log(q)
+  const q1=q.filter(t=>t.name===a.capital[0])
+  console.log(q1)
+  const r='http://openweathermap.org/img/wn/'+q1[0].weather[0].icon+'.png'
+//  console.log(r)
   return(
       <div>
           <h1>{a.name.common}</h1>
@@ -24,9 +26,9 @@ const Displayall=({ a,q })=>{
           <img src={a.flags.png} width='200'/>
           <div>
             <h2>Weather in {a.capital}</h2>
-            <div>temperature {q.main.temp}</div>
-            <img src={r} width='150'/>
-            <div>wind {q.wind.speed} m/s</div>
+            <div>temperature {q1[0].main.temp} Celsius</div>
+            <img src={r} width='200'/>
+            <div>wind {q1[0].wind.speed} m/s</div>
           </div>
       </div>
   )
@@ -44,7 +46,7 @@ const Displayall=({ a,q })=>{
     }else{
       if(s.length===1){
 
-        return <Displayall a={s[0]} q={w[0]}/>
+        return <Displayall a={s[0]} q={w}/>
       }else{
         return <Displayname a={s} buttonclick={buttonclick}/>
       }
@@ -75,7 +77,7 @@ function App() {
     axios
     .get('https://restcountries.com/v3.1/all')
     .then(response=>{
-      console.log('promise fullfilled')
+      //console.log('promise fullfilled')
       setcountries(response.data)
     })
   },[])
@@ -90,7 +92,7 @@ function App() {
   return ()=>{
   const g=s.map(t=>t.capital)
   if(g.length<10){
-    console.log('it is executed')
+    //console.log('it is executed')
     const r=g.map(t=>'https://api.openweathermap.org/data/2.5/weather?q='+t+'&appid='+process.env.REACT_APP_API_KEY+'&units=metric')
     //console.log(r)
     axios.all(r.map(url=>axios.get(url))).then(response=>setnewWeather(response.map(y=>y.data)))
@@ -99,7 +101,7 @@ function App() {
 }
  }
  useEffect(hook(s),[newFilter])
- console.log(newWeather)
+ //console.log(newWeather)
  const handleChange=(event)=>{                                       /*this the method for handling changes in search query*/ 
     setshowCountries([])
    // setgetData([])
@@ -110,7 +112,7 @@ function App() {
     <div>
       find countries <input value={newFilter} onChange={handleChange}/>
       <Cond s={s} buttonclick={buttonclick} w={newWeather}/>
-      <Showcond a={showCountries} />
+      <Showcond a={showCountries} w={newWeather}/>
     </div>
   );
 }
