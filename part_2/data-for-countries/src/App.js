@@ -1,12 +1,14 @@
 import { useState,useEffect } from 'react'
 import axios from 'axios'
-const Showcond=({ a })=>{
+const Showcond=({ a,getWeather })=>{
   if(a.length>0){
-    return <div>{a.map(to=><Displayall a={to} key={to.name.official}/>)}</div>
+    return <div>{a.map(to=><Displayall a={to} key={to.name.official} />)}</div>
   }
 }
-const Displayall=({ a })=>{
+const Displayall=({ a,q })=>{
 
+  const r='http://openweathermap.org/img/wn/'+q.weather[0].icon+'.png'
+  console.log(r)
   return(
       <div>
           <h1>{a.name.common}</h1>
@@ -20,6 +22,12 @@ const Displayall=({ a })=>{
           </ul>
   
           <img src={a.flags.png} width='200'/>
+          <div>
+            <h2>Weather in {a.capital}</h2>
+            <div>temperature {q.main.temp}</div>
+            <img src={r} width='150'/>
+            <div>wind {q.wind.speed} m/s</div>
+          </div>
       </div>
   )
   }
@@ -30,12 +38,13 @@ const Displayall=({ a })=>{
           </div>
       )
   }
-  const Cond=({ s,buttonclick })=>{
+  const Cond=({ s,buttonclick,w })=>{
     if(s.length>10){
       return <p>Too many matches,specify another filter</p>
     }else{
       if(s.length===1){
-        return <Displayall a={s[0]}/>
+
+        return <Displayall a={s[0]} q={w[0]}/>
       }else{
         return <Displayname a={s} buttonclick={buttonclick}/>
       }
@@ -45,17 +54,14 @@ function App() {
   const [ newFilter,setNewFilter ]=useState('')
   const [ countries,setcountries ]=useState([])
   const [ showCountries,setshowCountries ]=useState([])
-  const handleChange=(event)=>{
-    setshowCountries([])
-    setNewFilter(event.target.value)
-  }
+  const [ newWeather,setnewWeather ]=useState([])
   let s=[]
-  const buttonclick=(to)=>{
+  const buttonclick=(to)=>{                                           //this is function for handling onclick event for each button
    // setshowCountries(showCountries.concat(to))
-   return ()=>{
+   return ()=>{                                                       //this is the function returned by button click which actually handles the event
 
-    console.log('button click for '+to.name.common)
-    const fr = showCountries.filter(k=>k===to)
+    //console.log('button click for '+to.name.common)
+    const fr = showCountries.filter(k=>k===to)                        /**this line 69 to 77 filters the array when the button is clicked to show the view of individual country */
     if(fr.length===0){
     setshowCountries(showCountries.concat(to))
     }else{
@@ -64,8 +70,8 @@ function App() {
     }
    }
   }
-  console.log(showCountries)
-  useEffect(()=>{
+ // console.log(showCountries)
+  useEffect(()=>{                                                     //first effect hook to get data of countries
     axios
     .get('https://restcountries.com/v3.1/all')
     .then(response=>{
@@ -73,20 +79,38 @@ function App() {
       setcountries(response.data)
     })
   },[])
-  /*const changeCountries=(a)=>{
-   return ()=> {
-    console.log('countries changed')
-    setshowCountries(a)
-  }
-  }*/
+  
 //  s=countries.filter(cn => cn.name.common.substring(0,newFilter.length).toLowerCase()===newFilter.toLowerCase())
   s=countries.filter(cn => cn.name.common.toLowerCase().includes(newFilter.toLowerCase()))  
  //console.log(s)
+ 
+//  useEffect(hook(s),[])
+ 
+ const hook=(s)=>{
+  return ()=>{
+  const g=s.map(t=>t.capital)
+  if(g.length<10){
+    console.log('it is executed')
+    const r=g.map(t=>'https://api.openweathermap.org/data/2.5/weather?q='+t+'&appid='+process.env.REACT_APP_API_KEY+'&units=metric')
+    //console.log(r)
+    axios.all(r.map(url=>axios.get(url))).then(response=>setnewWeather(response.map(y=>y.data)))
+      
+}
+}
+ }
+ useEffect(hook(s),[newFilter])
+ console.log(newWeather)
+ const handleChange=(event)=>{                                       /*this the method for handling changes in search query*/ 
+    setshowCountries([])
+   // setgetData([])
+//    setnewWeather([])
+    setNewFilter(event.target.value)
+  }
   return (
     <div>
       find countries <input value={newFilter} onChange={handleChange}/>
-      <Cond s={s} buttonclick={buttonclick} />
-      <Showcond a={showCountries}/>
+      <Cond s={s} buttonclick={buttonclick} w={newWeather}/>
+      <Showcond a={showCountries} />
     </div>
   );
 }
