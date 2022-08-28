@@ -1,6 +1,28 @@
 import { useState,useEffect } from 'react'
 import axios from 'axios'
 import contactservice from './networkservice/contact'
+const Notifysuccess=(props)=>{
+  if(props.message===null){
+    return null
+  }else{
+    return(
+      <div className='success'>
+        {props.message}
+      </div>
+    )
+  }
+}
+const Notifyerror=(props)=>{
+  if(props.message===null){
+    return null
+  }else{
+    return(
+      <div className='error'>
+        {props.message}
+      </div>
+    )
+  }
+}
 const Singleperson =({ name, number,onClickbutton })=>{
   return(
     <div>
@@ -45,6 +67,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newPhone ,setNewPhone]=useState('')
   const [newFilter, setNewFilter]=useState('')
+  const [newSuccess, setNewSuccess ]=useState(null)
+  const [newError,setNewError ]=useState(null)
   const addNote = (event) =>{
     event.preventDefault()
     const po=persons.filter((p)=>p.name===newName)
@@ -60,6 +84,8 @@ const App = () => {
       setPersons(pot.concat(response))
       setNewName('')
       setNewPhone('')  
+      setNewSuccess('Added '+newObj.name)
+      setTimeout(()=>setNewSuccess(null),5000)
     })
   }else{
     const upd =window.confirm(po[0].name +'is already added to phonebook,replace the old number with a new one?')
@@ -70,6 +96,10 @@ const App = () => {
         setPersons(persons.map(n=>n.id !== res.id? n : res))
         setNewName('')
         setNewPhone('')
+      })
+      .catch(error=>{
+        setNewError('Information of '+ncon.name+' was already removed from the server')
+        setTimeout(()=>setNewError(null),5000)
       })
     }
   }
@@ -111,6 +141,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notifysuccess message={newSuccess}/>
+      <Notifyerror message={newError}/>
       <Filterpro Filter={newFilter} handleChangeFilter={handleChangeFilter}/>
       <Addperson addNote={addNote} Name={newName} Phone={newPhone} handleChangeName={handleChangeName} handleChangePhone={handleChangePhone}/>
       <h2>Numbers</h2>
