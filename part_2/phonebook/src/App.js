@@ -1,10 +1,18 @@
 import { useState,useEffect } from 'react'
 import axios from 'axios'
-const Singleperson =({ name, number })=><p>{name} {number}</p>
-const Allperson =({ persons })=>{
+import contactservice from './networkservice/contact'
+const Singleperson =({ name, number,onClickbutton })=>{
   return(
     <div>
-   {persons.map((person)=><Singleperson key={person.name} name={person.name} number={person.number}/>)}
+    {name} {number}
+    <button onClick={onClickbutton}>delete</button>
+    </div>
+)
+}
+const Allperson =({ persons,onClick })=>{
+  return(
+    <div>
+   {persons.map((person)=><Singleperson key={person.name} name={person.name} number={person.number} onClickbutton={()=>onClick(person.id)}/>)}
   </div>
   )
   
@@ -33,12 +41,7 @@ const Filterpro=(props)=>{
   )
 }
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newPhone ,setNewPhone]=useState('')
   const [newFilter, setNewFilter]=useState('')
@@ -53,20 +56,28 @@ const App = () => {
     //console.log(newObj)
     const pot=persons
     //console.log(pot)
-    setPersons(pot.concat(newObj))
-    setNewName('')
-    setNewPhone('')
+    contactservice.addCon(newObj).then(response=>{
+      setPersons(pot.concat(response))
+      setNewName('')
+      setNewPhone('')  
+    })
   }else{
-    window.alert(newName+' is already in phonebook')
-    setNewName('')
+    const upd =window.confirm(po[0].name +'is already added to phonebook,replace the old number with a new one?')
+    if(upd){
+      const ncon={...po[0],number : newPhone}
+      contactservice.updateCon(ncon.id,ncon)
+      .then(res=>{
+        setPersons(persons.map(n=>n.id !== res.id? n : res))
+        setNewName('')
+        setNewPhone('')
+      })
+    }
   }
   }
   const hook= ()=>{
-    axios
-    .get('http://localhost:3001/persons')
-    .then(Response=>{
-      console.log('promise fullfilled')
-      setPersons(Response.data)
+    contactservice.getAll().then(response=>{
+      console.log("promise fulfilled")
+      setPersons(response)
     })
   }
   useEffect(hook,[])
@@ -79,6 +90,15 @@ const App = () => {
   }
   const handleChangeFilter=(event)=>{
     setNewFilter(event.target.value)
+  }
+  const onClick=(id)=>{
+    const f=persons.find(con=>con.id===id)
+    const del=window.confirm('Delete '+f.name+'?')
+    if(del){
+      contactservice.delCon(id).then(res=>console.log(f.name +'deleted'))
+    }
+    const t=persons.filter(person=>person.id!==id)
+    setPersons(del?t:persons)
   }
   let show=true
   if(newFilter!==''){
@@ -94,7 +114,7 @@ const App = () => {
       <Filterpro Filter={newFilter} handleChangeFilter={handleChangeFilter}/>
       <Addperson addNote={addNote} Name={newName} Phone={newPhone} handleChangeName={handleChangeName} handleChangePhone={handleChangePhone}/>
       <h2>Numbers</h2>
-      <Allperson persons={showit}/>
+      <Allperson persons={showit} onClick={onClick}/>
     </div>
   )
 }
