@@ -51,10 +51,10 @@ const blogs = [
 beforeEach(async ()=>{
     await Blog.deleteMany({})
     await User.deleteMany({})
-    const noteObjects=blogs.map(t=>new Blog(t))
-    const allpromise=noteObjects.map(t=>t.save())
-    await Promise.all(allpromise)
-})
+    //const noteObjects=blogs.map(t=>new Blog(t))
+    //const allpromise=noteObjects.map(t=>t.save())
+    //await Promise.all(allpromise)
+},5000)
 test('test for http get',async ()=>{
     await api
     .get('/api/blogs')

@@ -19,5 +19,9 @@ app.use(express.json())
 app.use('/api/login',loginRouter)
 app.use('/api/blogs',blogsrouter)
 app.use('/api/users',userrouter)
+if(process.env.NODE_ENV==='test'){
+     const testingrouter=require('./controllers/testing')
+     app.use('/api/testing',testingrouter)
+}
 app.use(errorHandler)
 module.exports=app
