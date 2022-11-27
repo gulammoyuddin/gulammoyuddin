@@ -1,1 +1,1 @@
-https://desolate-inlet-73775.herokuapp.com/api/persons
+https://desolate-inlet-73775.herokuapp.com
